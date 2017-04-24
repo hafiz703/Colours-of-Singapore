@@ -1,0 +1,29 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1492931374357.000,
+    "dirty" : false,
+    "encoding" : "",
+    "folds" : "",
+    "hash" : "0",
+    "id" : "1AF5E6EE",
+    "lastKnownWriteTime" : 2484628536874007931,
+    "last_content_update" : 1492931374357,
+    "path" : null,
+    "project_path" : null,
+    "properties" : {
+        "cacheKey" : "A5AC9A10",
+        "caption" : "percentMergeTest",
+        "contentUrl" : "grid_resource/gridviewer.html?env=&obj=percentMergeTest&cache_key=A5AC9A10",
+        "displayedObservations" : "1153",
+        "environment" : "",
+        "object" : "percentMergeTest",
+        "preview" : "0",
+        "totalObservations" : "1153",
+        "variables" : "9"
+    },
+    "relative_order" : 3,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_dataframe"
+}

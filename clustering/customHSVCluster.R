@@ -1,0 +1,129 @@
+library(data.table)
+library(rgl)
+#colors <- read.csv("average.csv", stringsAsFactors = F) 
+colors <- read.csv("Flickr/Mode/averageMode.csv", stringsAsFactors = F) 
+#colors <- read.csv("Flickr/noGrey/averageNoGrey.csv", stringsAsFactors = F) 
+#colors <- read.csv("Flickr/100x100/average-max-100x100.csv", stringsAsFactors = F) 
+#colors <- read.csv("colors.csv", stringsAsFactors = F)
+
+dtColors <- setDT(colors)
+
+dtColors <- dtColors[R != 'NA',,]
+dtColors <- dtColors[R != '0' & G != '0' & B != '0',,]
+
+## tabulate the avg R,G and B for eachh cluster
+#Colors.clusterAvg <- dtColors[,list(R.avg = mean(R),G.avg = mean(G),B.avg = mean(B)),by=cluster,]
+#Colors.clusterAvg <- Colors.clusterAvg[,hexColor := rgb(Colors.clusterAvg[,R.avg], Colors.clusterAvg[,G.avg], Colors.clusterAvg[,B.avg], maxColorValue=255),]
+
+#function to get mode
+getmode <- function(v) {
+  uniqv <- unique(v)
+  uniqv[which.max(tabulate(match(v, uniqv)))]
+}
+
+# function to get mode
+getCluster <- function(hue) {
+  if (hue > 11/12.0 || hue <= 1/12.0) {
+    return('Red')
+  } else if (hue > 1/12.0 && hue <= 3/12.0) {
+    return('Yellow')
+  } else if (hue > 3/12.0 && hue <= 5/12.0) {
+    return('Green')
+  } else if (hue > 5/12.0 && hue <= 7/12.0) {
+    return('Cyan')
+  } else if (hue > 7/12.0 && hue <= 9/12.0) {
+    return('Blue')
+  } else {
+    return('Magenta')
+  }
+}
+
+# vectorize getCluster function so that it can process vector correctly, otherwise use many nested ifelse()
+getClusterVector <- Vectorize(getCluster)
+
+#clusterColors <- dtColors[ ,list(cluster = getmode(cluster)),by=.(Lat,Lon)]
+#clusterColors <- merge(clusterColors, Colors.clusterAvg, by = "cluster")
+#clusterColors <- clusterColors[,list(cluster,Lat,Lon,hexColor),]
+
+#fwrite(clusterColors, "hexWith100x100Clusters.csv")
+
+#fwrite(dtColors, "colorsMode.csv")
+#fwrite(Colors.clusterAvg, "clusterMode.csv")
+#fwrite(avgColorPerHex, "avgColorPerHex.csv")
+
+# convert RGB to HSV and transpose matrix to get H,S and V as columns 
+hsvColor <- t(rgb2hsv(dtColors[,R], dtColors[,G], dtColors[,B], maxColorValue = 255))
+hsvColor <- data.table(hsvColor)
+hsvColor <- hsvColor[,cluster := getClusterVector(h),]
+hsvColor <- hsvColor[s < 0.05 & v > 0.9,cluster := 'White',]
+# hsvColor <- hsvColor[s < 0.01 & v > 0.9,cluster := 'White',]
+hsvColor <- hsvColor[v < 0.1,cluster := 'Black',]
+hsvColor <- hsvColor[s < 0.1 & cluster != "White" & cluster != "Black",cluster := 'Gray',]
+
+#Sequence to write id col for both data table
+hsvColor$id <- seq.int(nrow(hsvColor))
+dtColors$id <- seq.int(nrow(dtColors))
+
+#merge data table
+hsvColor2 <- merge(hsvColor,dtColors,by = "id")
+
+#Remove Black, White and Gray
+hsvColor2 <- hsvColor2[cluster != "White",,]
+hsvColor2 <- hsvColor2[cluster != "Black",,]
+hsvColor2 <- hsvColor2[cluster != "Gray",,]
+
+## finding average color of cluster as representative
+colorClusters <- hsvColor2[,list(R.avg = mean(R),G.avg = mean(G),B.avg = mean(B)),by=cluster,]
+colorClusters <- colorClusters[,hexColor := rgb(colorClusters[,R.avg], colorClusters[,G.avg], colorClusters[,B.avg], maxColorValue=255),]
+colorClusters <- colorClusters[,list(cluster,hexColor),]
+
+# customClusterRep <- colorClusters
+# customClusterRep[cluster == "Red",hexColor = "",]
+
+hsvColor2 <- merge(colorClusters,hsvColor2,by = "cluster")
+
+clusterColors <- hsvColor2[ ,list(cluster = getmode(cluster)),by=.(Lat,Lon)]
+clusterColors <- merge(clusterColors, colorClusters, by = "cluster")
+
+fwrite(clusterColors, "colorsHSV.csv")
+
+# For testing number of Cyan pics in each Lat,Lon
+testCyan <- hsvColor2[cluster == "Cyan",.N,by = .(Lat,Lon)]
+setnames(testCyan,"N","N.Cyan")
+testBlue <- hsvColor2[cluster == "Blue",.N,by = .(Lat,Lon)]
+setnames(testBlue,"N","N.Blue")
+testYellow <- hsvColor2[cluster == "Yellow",.N,by = .(Lat,Lon)]
+setnames(testYellow,"N","N.Yellow")
+testRed <- hsvColor2[cluster == "Red",.N,by = .(Lat,Lon)]
+setnames(testRed,"N","N.Red")
+testGreen <- hsvColor2[cluster == "Green",.N,by = .(Lat,Lon)]
+setnames(testGreen,"N","N.Green")
+testMagenta <- hsvColor2[cluster == "Magenta",.N,by = .(Lat,Lon)]
+setnames(testMagenta,"N","N.Magenta")
+#comparing the colours
+mergeTest <- merge(testBlue,testCyan,all = TRUE)
+mergeTest <- merge(mergeTest,testYellow,all = TRUE)
+mergeTest <- merge(mergeTest,testRed,all = TRUE)
+mergeTest <- merge(mergeTest,testGreen,all = TRUE)
+mergeTest <- merge(mergeTest,testMagenta,all = TRUE)
+
+mergeTest[is.na(mergeTest)] <- 0
+
+mergeTest <- mergeTest[,N.Total := N.Blue + N.Cyan + N.Yellow + N.Red + N.Green + N.Magenta,]
+percentMergeTest <- mergeTest[,N.Blue := round(N.Blue / N.Total,3),]
+percentMergeTest <- percentMergeTest[,N.Cyan := round(N.Cyan / N.Total,3),]
+percentMergeTest <- percentMergeTest[,N.Yellow := round(N.Yellow / N.Total,3),]
+percentMergeTest <- percentMergeTest[,N.Red := round(N.Red / N.Total,3),]
+percentMergeTest <- percentMergeTest[,N.Green := round(N.Green / N.Total,3),]
+percentMergeTest <- percentMergeTest[,N.Magenta := round(N.Magenta / N.Total,3),]
+
+test <- percentMergeTest[N.Total >= 30,,]
+
+fwrite(mergeTest, "ColorFreqForEachHex.csv")
+fwrite(percentMergeTest, "ColorPercentageForEachHex.csv")
+
+library(plotly)
+library(dplyr)
+
+p <- plot_ly(data = dtColors,x = ~R, y = ~G, z = ~B, type = "scatter3d", mode = "markers", color = ~cluster, text = ~paste("R: ", R, '<br>G:', G, '<br>B:', B), hoverinfo = "text") %>%      layout(title = "3D Scatter plot of mode colors of hex of Singapore using Flickr photos",            scene = list(xaxis = list(title = "Red",range = c(0,255)),yaxis = list(title = "Green",range = c(0,255)),zaxis = list(title = "Blue",range = c(0,255))))
+p

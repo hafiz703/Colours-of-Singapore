@@ -1,0 +1,29 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1492931956931.000,
+    "dirty" : false,
+    "encoding" : "",
+    "folds" : "",
+    "hash" : "0",
+    "id" : "64DF9359",
+    "lastKnownWriteTime" : 7308604914264011873,
+    "last_content_update" : 1492931956931,
+    "path" : null,
+    "project_path" : null,
+    "properties" : {
+        "cacheKey" : "8842266D",
+        "caption" : "clusterColors",
+        "contentUrl" : "grid_resource/gridviewer.html?env=&obj=clusterColors&cache_key=8842266D",
+        "displayedObservations" : "1153",
+        "environment" : "",
+        "object" : "clusterColors",
+        "preview" : "0",
+        "totalObservations" : "1153",
+        "variables" : "4"
+    },
+    "relative_order" : 5,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_dataframe"
+}
