@@ -1,0 +1,22 @@
+{
+    "collab_server" : "",
+    "contents" : "library(data.table)\nlibrary(rgl)\n#colors <- read.csv(\"average.csv\", stringsAsFactors = F) \n#colors <- read.csv(\"Flickr/Mode/averageMode.csv\", stringsAsFactors = F) \n#colors <- read.csv(\"Flickr/noGrey/averageNoGrey.csv\", stringsAsFactors = F) \ncolors <- read.csv(\"Flickr/100x100/average-max-100x100.csv\", stringsAsFactors = F) \n#colors <- read.csv(\"colors.csv\", stringsAsFactors = F)\n\ndtColors <- setDT(colors)\n\ndtColors <- dtColors[R != 'NA',,]\ndtColors <- dtColors[R != '0' & G != '0' & B != '0',,]\n\n#clusters <- kmeans(dtColors[,1:3],8)\n#clusters <- kmeans(dtColors[,1:3],12,algorithm=\"Lloyd\",iter.max = 100)\n#clusters <- kmeans(dtColors[,1:3],12,algorithm=\"MacQueen\",iter.max = 70)\n\ndtColors$cluster <- as.factor(clusters$cluster)\nplot3d(dtColors[,1:3], col=dtColors$cluster, main=\"k-means clusters\")\n\n## tabulate the avg R,G and B for eachh cluster\nColors.clusterAvg <- dtColors[,list(R.avg = mean(R),G.avg = mean(G),B.avg = mean(B)),by=cluster,]\nColors.clusterAvg <- Colors.clusterAvg[,hexColor := rgb(Colors.clusterAvg[,R.avg], Colors.clusterAvg[,G.avg], Colors.clusterAvg[,B.avg], maxColorValue=255),]\n\n#avgColorPerHex <- dtColors[ ,list(R.avg = mean(R),G.avg = mean(G),B.avg = mean(B)),by=.(Lat,Lon)]\n#avgColorPerHex <- avgColorPerHex[,avgHexColor := rgb(avgColorPerHex[,R.avg], avgColorPerHex[,G.avg], avgColorPerHex[,B.avg], maxColorValue=255),]\n\n#function to get mode\ngetmode <- function(v) {\n  uniqv <- unique(v)\n  uniqv[which.max(tabulate(match(v, uniqv)))]\n}\n\n#function to get mode\ngetCluster <- function(hue) {\n  if (hue > 11/12.0 || hue <= 1/12.0) {\n    return('Red')\n  } else if (hue > 1/12.0 && hue <= 3/12.0) {\n    return('Yellow')\n  } else if (hue > 3/12.0 && hue <= 5/12.0) {\n    return('Green')\n  } else if (hue > 5/12.0 && hue <= 7/12.0) {\n    return('Cyan')\n  } else if (hue > 7/12.0 && hue <= 9/12.0) {\n    return('Blue')\n  } else {\n    return('Magenta')\n  }\n}\n\n\n#clusterColors <- dtColors[ ,list(cluster = getmode(cluster)),by=.(Lat,Lon)]\n#clusterColors <- merge(clusterColors, Colors.clusterAvg, by = \"cluster\")\n#clusterColors <- clusterColors[,list(cluster,Lat,Lon,hexColor),]\n\n#fwrite(clusterColors, \"hexWith100x100Clusters.csv\")\n\n#fwrite(dtColors, \"colorsMode.csv\")\n#fwrite(Colors.clusterAvg, \"clusterMode.csv\")\n#fwrite(avgColorPerHex, \"avgColorPerHex.csv\")\n\n# convert RGB to HSV and transpose matrix to get H,S and V as columns \ntest <- t(rgb2hsv(dtColors[,R], dtColors[,G], dtColors[,B], maxColorValue = 255))\ntest <- data.table(test)\ntest <- test[,cluster := getCluster(h),]\n#test <- test[,list(h,s,v,cluster = getCluster(h)),]\n\n## can verify avg with summary\nsummary(dtColors[cluster == 1,,])\nsummary(avgColorPerHex$avgHexColor)\n\nlibrary(plotly)\nlibrary(dplyr)\n\np <- plot_ly(data = dtColors,x = ~R, y = ~G, z = ~B, type = \"scatter3d\", mode = \"markers\", color = ~cluster, text = ~paste(\"R: \", R, '<br>G:', G, '<br>B:', B), hoverinfo = \"text\") %>%      layout(title = \"3D Scatter plot of mode colors of hex of Singapore using Flickr photos\",            scene = list(xaxis = list(title = \"Red\",range = c(0,255)),yaxis = list(title = \"Green\",range = c(0,255)),zaxis = list(title = \"Blue\",range = c(0,255))))\np\n\n#p1 <- plot_ly(data = dtColors,x = ~Lon, y = ~Lat, z = ~cluster, type = \"scatter3d\", mode = \"markers\", color = ~cluster, text = ~paste(\"R: \", R, '<br>G:', G, '<br>B:', B), hoverinfo = \"text\") %>%      layout(title = \"3D Scatter plot of average colors of hex of Singapore using Flickr photos\",            scene = list(xaxis = list(title = \"Lon\"),yaxis = list(title = \"Lat\"),zaxis = list(title = \"Cluster\")))\n#p1",
+    "created" : 1493014289645.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "1817018258",
+    "id" : "AF460413",
+    "lastKnownWriteTime" : 1492600838,
+    "last_content_update" : 1492600838,
+    "path" : "C:/Users/Junsheng Lin/Dropbox/Sutd/Hass/Making Maps/Maps project/clustering/cluster r.R",
+    "project_path" : "cluster r.R",
+    "properties" : {
+        "docOutlineVisible" : "0",
+        "tempName" : "Untitled1"
+    },
+    "relative_order" : 7,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}
