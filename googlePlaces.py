@@ -17,8 +17,8 @@ def getPhotos(lat,lng):
     query_result = google_places.nearby_search(
             lat_lng = {'lat':lat,'lng':lng},
             # location='Singapore', keyword='Bishan',
-            types = [types.TYPE_PARK,types.TYPE_NEIGHBORHOOD,types.TYPE_NATURAL_FEATURE,types.TYPE_LOCALITY],
-            radius=500)
+            # types = [types.TYPE_PARK,types.TYPE_NEIGHBORHOOD,types.TYPE_NATURAL_FEATURE,types.TYPE_LOCALITY],
+            radius=560)
     # If types param contains only 1 item the request to Google Places API
     # will be send as type param to fullfil:
     # http://googlegeodevelopers.blogspot.com.au/2016/02/changes-and-quality-improvements-in_16.html
@@ -55,12 +55,7 @@ def getPhotos(lat,lng):
             # Image URL
             # print photo.filename
             print photo.url
-            urllib.urlretrieve(photo.url, "./GooglePhotos/%s-%s/photo%d.jpg"%(lat,lng,x)) 
-            
-            
-            
-            
-              
+            urllib.urlretrieve(photo.url, "./GooglePhotos/%s-%s/photo%d.jpg"%(lat,lng,x))         
             x+=1
 
 
@@ -70,4 +65,4 @@ def getPhotos(lat,lng):
                 pagetoken=query_result.next_page_token)
 
 
-getPhotos(1.3526,103.8352)
+ 

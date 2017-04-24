@@ -8,7 +8,7 @@ import csv
 
 
 
-rootdirectory = 'C:/Users/-/Desktop/PyScripts/GooglePhotos'
+rootdirectory = 'E:\MapsProj'
 
 for root,dirs,files in os.walk(rootdirectory):#insert filename here
 	print("\n")

@@ -7,8 +7,8 @@ app = Flask(__name__)
 
 @app.route("/")
 def home():
-    lat = 1.3526
-    lng = 103.8352
+    lat = 1.3691
+    lng = 103.8454
     url = "https://api.instagram.com/v1/media/search?lat="+str(lat)+"&lng="+str(lng)+"&access_token=247164960.ba4c844.3a1ddcef17ac44bf848c87b3767f0985"
     try:
         uResponse = requests.get(url)
